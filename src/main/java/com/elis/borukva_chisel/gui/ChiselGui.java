@@ -21,19 +21,18 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class ChiselGui extends SimpleGui {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BorukvaChisel.MOD_ID);
     private static final int MAX_SLOTS = 32; // 8X4 grid
+    private static int startSlotIdx = 3;
 
     /**
      * Constructs a new simple container gui for the supplied player.
@@ -41,7 +40,7 @@ public class ChiselGui extends SimpleGui {
      * @param player the player to server this gui to
      */
     public ChiselGui(ServerPlayerEntity player) {
-        super(ScreenHandlerType.GENERIC_9X6, player, false);
+        super(ScreenHandlerType.STONECUTTER, player, false);
         this.setTitle(Text.literal("Chisel"));
 
         addButtons();
@@ -73,12 +72,15 @@ public class ChiselGui extends SimpleGui {
         LOGGER.info("Stack in hand -> {}", handler.getCursorStack());
 
         if (handler.getCursorStack().isEmpty()) {
+            // Adding item to hand
             handler.setCursorStack(currentStack);
             // Used because the ItemStack icon remained after
             // adding it to the player's hand
             currentSlot.setItemStack(ItemStack.EMPTY);
+            clearSlots();
         } else {
             if (currentStack.isEmpty()) {
+                // Add item to slot
                 currentSlot.setItemStack(handler.getCursorStack());
                 handler.setCursorStack(ItemStack.EMPTY);
             } else {
@@ -87,32 +89,40 @@ public class ChiselGui extends SimpleGui {
                         player.getInventory().insertStack(currentStack);
                     }
                 } else {
+                    // TODO check
                     player.getInventory().offerOrDrop(currentStack);
                 }
             }
         }
 
-        currentSlot.getItemStack().streamTags().forEach((tag) -> {
-                    LOGGER.info(tag.toString());
-                }
-        );
+        currentStack = currentSlot.getItemStack();
 
-        if (currentSlot.getItemStack().isOf(Items.DIAMOND)) {
-            int idx = 3;
+        var itemTags = currentStack.streamTags().toList();
 
-            for (var woodBlock : Registries.BLOCK) {
-                if (woodBlock.getDefaultState().isIn(BlockTags.LOGS) ||
-                        woodBlock.getDefaultState().isIn(BlockTags.PLANKS)) {
+        int idx = startSlotIdx;
 
-                    this.setSlot(idx, new GuiElementBuilder(woodBlock.asItem())
-                            .setName(Text.literal("Possible variants"))
+        for (var item : Registries.ITEM) {
+            if (idx == MAX_SLOTS){
+                break;
+            }
+
+            for (var tag : itemTags) {
+                if (item.getDefaultStack().isIn(tag)) {
+                    LOGGER.info("Item {}", item);
+
+                    this.setSlot(idx, new GuiElementBuilder(item)
                             .setCallback((index, type, action) -> {
                                 // TODO: Implement interface
                             }));
+
                     idx++;
+
+                    break;
                 }
             }
         }
+
+        LOGGER.info("\n");
     }
 
 
@@ -141,5 +151,11 @@ public class ChiselGui extends SimpleGui {
         }
 
         return super.onClick(index, type, action, element);
+    }
+
+    public void clearSlots(){
+        for(int idx = startSlotIdx; idx < MAX_SLOTS; idx++){
+            this.clearSlot(idx);
+        }
     }
 }
