@@ -2,14 +2,9 @@ package com.elis.borukva_chisel.item;
 
 import com.elis.borukva_chisel.BorukvaChisel;
 import com.elis.borukva_chisel.gui.ChiselGui;
-import com.mojang.authlib.GameProfile;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import eu.pb4.sgui.api.ClickType;
-import eu.pb4.sgui.api.elements.*;
-import eu.pb4.sgui.api.gui.SimpleGui;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -17,28 +12,21 @@ import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 public class ChiselItem extends Item implements PolymerItem {
 
-
+    private final PolymerModelData model = PolymerResourcePackUtils.requestModel(Items.BOOK,
+            Identifier.of(BorukvaChisel.MOD_ID, "item/chisel"));
 
     public ChiselItem(Settings settings) {
         super(settings);
@@ -53,7 +41,7 @@ public class ChiselItem extends Item implements PolymerItem {
 
         ServerPlayerEntity playerEntity = Objects.requireNonNull(world.getServer()).getPlayerManager().getPlayer(user.getName().getString());
 
-        if (playerEntity == null){
+        if (playerEntity == null) {
             return TypedActionResult.pass(user.getStackInHand(hand));
         }
         // TODO: TEST
@@ -87,9 +75,7 @@ public class ChiselItem extends Item implements PolymerItem {
 
     @Override
     public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return PolymerResourcePackUtils.requestModel(Items.BOOK,
-                        Identifier.of(BorukvaChisel.MOD_ID, "item/chisel"))
-                .value();
+        return model.value();
     }
 
     @Override

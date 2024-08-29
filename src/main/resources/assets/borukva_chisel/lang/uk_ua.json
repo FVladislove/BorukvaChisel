@@ -1,3 +1,6 @@
 {
-  "item.borukva_chisel.chisel": "Долото"
+  "item.borukva_chisel.chisel": "Долото",
+
+  "block.borukva_chisel.test_wood": "Тестове дерево",
+  "block.borukva_chisel.test_wood2": "Тестове дерево 2"
 }

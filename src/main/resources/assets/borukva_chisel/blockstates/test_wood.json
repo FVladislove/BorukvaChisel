@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "borukva_chisel:block/test_wood"
+    }
+  }
+}
