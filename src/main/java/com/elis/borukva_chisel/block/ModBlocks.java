@@ -18,7 +18,7 @@ public class ModBlocks {
 
         // TODO find better way?
         var map = new HashMap<Block, List<Block>>();
-        Stream.of(WoodBlocks.WOOD_BLOCKS).forEach(map::putAll);
+        Stream.of(WoodBlocks.getWoodBlocks()).forEach(map::putAll);
 
         return map;
     }

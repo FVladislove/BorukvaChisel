@@ -51,7 +51,7 @@ public class WoodBlocks {
         );
     }
 
-    public Map<Block, List<Block>> getWoodBlocks(){
+    public static Map<Block, List<Block>> getWoodBlocks(){
         logger.debug("Collecting all mod blocks");
 
         // TODO find better way?
