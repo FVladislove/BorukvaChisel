@@ -1,6 +1,5 @@
 package com.elis.borukva_chisel.gui;
 
-import com.elis.borukva_chisel.BorukvaChisel;
 import com.elis.borukva_chisel.block.ModBlocks;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.*;
@@ -20,19 +19,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ChiselGui extends SimpleGui {
 
     // TODO fix
-    public static final Logger logger = LoggerFactory.getLogger(BorukvaChisel.MOD_ID + "." + ChiselGui.class.getName());
+    public static final Logger logger = LoggerFactory.getLogger(ChiselGui.class);
 
     private static final int MAX_SLOTS = 32; // 8X4 grid
     private static final int startSlotIdx = 5;
 
     private static final int inputIdx = 0;
     private static final int infoIdx = 1;
-    private static final int outputIdx = 2;
-    private static final int prevPageIdx = 3;
-    private static final int nextPageIdx = 4;
-
-    // TODO use item selecting or direct taking from menu?
-//    private GuiElement selectedSlot;
+    private static final int prevPageIdx = 2;
+    private static final int nextPageIdx = 3;
 
     /**
      * Constructs a new simple container gui for the supplied player.
@@ -57,13 +52,6 @@ public class ChiselGui extends SimpleGui {
                 .setName(Text.literal("Info"))
                 .setCallback((index, type, action) -> {
                     // infoMenu();
-                })
-                .build());
-
-        this.setSlot(outputIdx, new GuiElementBuilder(ItemStack.EMPTY)
-                .setName(Text.literal("Output"))
-                .setCallback((index, type, action) -> {
-//                    getItem();
                 })
                 .build());
 

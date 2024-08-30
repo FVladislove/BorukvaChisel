@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 public class BorukvaChisel implements ModInitializer {
 	public final static String MOD_ID = "borukva_chisel";
-    public static final Logger logger = LoggerFactory.getLogger(MOD_ID);
+    public static final Logger logger = LoggerFactory.getLogger(BorukvaChisel.class);
 
 	@Override
 	public void onInitialize() {

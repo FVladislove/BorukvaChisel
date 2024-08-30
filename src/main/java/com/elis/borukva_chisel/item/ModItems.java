@@ -10,19 +10,23 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ModItems {
+
+    private static final Logger logger = LoggerFactory.getLogger(ModItems.class);
 
     public static final Item POLYMER_CHISEL = registerItem("chisel",
             new ChiselItem(new Item.Settings()));
 
     private static Item registerItem(String name, Item item){
-        BorukvaChisel.logger.info("Registering item: {}", name);
+        logger.info("Registering item: {}", name);
         return Registry.register(Registries.ITEM, Identifier.of(BorukvaChisel.MOD_ID, name), item);
     }
 
     public static void register(){
-        BorukvaChisel.logger.info("Registering Mod items for " + BorukvaChisel.MOD_ID);
+        logger.info("Registering mod items");
 
         ItemGroup.Builder builder = PolymerItemGroupUtils.builder();
         builder.icon(() -> new ItemStack(ModItems.POLYMER_CHISEL, 1));

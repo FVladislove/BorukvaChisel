@@ -5,6 +5,7 @@ import com.elis.borukva_chisel.gui.ChiselGui;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -21,7 +22,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 public class ChiselItem extends Item implements PolymerItem {
 
@@ -39,18 +39,13 @@ public class ChiselItem extends Item implements PolymerItem {
             return TypedActionResult.pass(user.getStackInHand(hand));
         }
 
-        ServerPlayerEntity playerEntity = Objects.requireNonNull(world.getServer()).getPlayerManager().getPlayer(user.getName().getString());
+        if (user instanceof ServerPlayerEntity){
+            SimpleGui gui = new ChiselGui((ServerPlayerEntity) user);
+            gui.open();
 
-        if (playerEntity == null) {
-            return TypedActionResult.pass(user.getStackInHand(hand));
+            return TypedActionResult.success(user.getStackInHand(hand));
         }
-        // TODO: TEST
-//        if (user instanceof ServerPlayerEntity){
-//            SimpleGui gui1 = getSimpleGui((ServerPlayerEntity) user);
-//        }
-
-        var guiOpened = new ChiselGui(playerEntity).open();
-        return TypedActionResult.success(user.getStackInHand(hand));
+        return TypedActionResult.pass(user.getStackInHand(hand));
     }
 
     @Override

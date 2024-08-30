@@ -1,6 +1,5 @@
 package com.elis.borukva_chisel.block;
 
-import com.elis.borukva_chisel.BorukvaChisel;
 import net.minecraft.block.Block;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class ModBlocks {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BorukvaChisel.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModBlocks.class);
 
     public static Map<Block, List<Block>> getAllBlocks(){
         LOGGER.info("Collecting all mod blocks");

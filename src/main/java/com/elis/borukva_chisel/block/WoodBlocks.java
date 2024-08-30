@@ -20,11 +20,10 @@ import java.util.stream.Stream;
 
 public class WoodBlocks {
 
-    private static final Logger logger = LoggerFactory.getLogger(BorukvaChisel.class + "." + WoodBlocks.class);
+    private static final Logger logger = LoggerFactory.getLogger(WoodBlocks.class);
 
     // because using Blocks.CHERRY_LOG isn't possible for settings
     // TODO check why it causes a problem
-    // public static final Map<Block, List<Block>> WOOD_BLOCKS = registerBlocks(
     public static final Map<Block, List<Block>> WOOD_BLOCKS = registerBlocks(
             Blocks.CHERRY_LOG, Blocks.CHERRY_WOOD,
             new HashSet<>() {{
@@ -63,7 +62,7 @@ public class WoodBlocks {
     // TODO make function to use less repeatable data
     private static Block registerBlock(String name, Block
             block, Item.Settings settings) {
-        BorukvaChisel.logger.info("Registering wood block: {}", name);
+        logger.info("Registering wood block: {}", name);
 
         registerBlockItem(name, block, settings);
         return Registry.register(Registries.BLOCK, Identifier.of(BorukvaChisel.MOD_ID, name), block);
@@ -83,7 +82,7 @@ public class WoodBlocks {
     }
 
     public static void registerModBlocks() {
-        BorukvaChisel.logger.info("Registering ModBlocks blocks for " + BorukvaChisel.MOD_ID);
+        logger.info("Registering mod blocks");
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS).register(WoodBlocks::addBlocksToBuildingBlocksTabItemGroup);
     }
 }
