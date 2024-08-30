@@ -2,7 +2,6 @@ package com.elis.borukva_chisel.item;
 
 import com.elis.borukva_chisel.BorukvaChisel;
 import com.elis.borukva_chisel.block.ModBlocks;
-import com.elis.borukva_chisel.block.WoodBlocks;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
