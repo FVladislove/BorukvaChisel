@@ -24,12 +24,19 @@ public class WoodBlocks {
 
     // because using Blocks.CHERRY_LOG isn't possible for settings
     // TODO check why it causes a problem
-    public static final Map<Block, List<Block>> WOOD_BLOCKS = registerBlocks(
+    public static final Map<Block, List<Block>> CHERRY_LOGS = registerBlocks(
             Blocks.CHERRY_LOG, Blocks.CHERRY_WOOD,
             new HashSet<>() {{
                 add("test_wood");
                 add("test_wood2");
             }});
+
+    public static final Map<Block, List<Block>> CHERRY_BUTTONS = registerBlocks(
+            Blocks.CHERRY_BUTTON, new HashSet<>() {{
+                add("test_button");
+                add("test_button2");
+            }}
+    );
 
 
     private static Map<Block, List<Block>> registerBlocks(Block parentBLock, Set<String> blocksNames) {
@@ -50,15 +57,18 @@ public class WoodBlocks {
         );
     }
 
-    public static Map<Block, List<Block>> getWoodBlocks(){
+    public static Map<Block, List<Block>> getWoodBlocks() {
         logger.debug("Collecting all mod blocks");
 
         // TODO find better way?
         var map = new HashMap<Block, List<Block>>();
-        Stream.of(WoodBlocks.WOOD_BLOCKS).forEach(map::putAll);
+        Stream.of(
+                WoodBlocks.CHERRY_LOGS,
+                WoodBlocks.CHERRY_BUTTONS).forEach(map::putAll);
 
         return map;
     }
+
     // TODO make function to use less repeatable data
     private static Block registerBlock(String name, Block
             block, Item.Settings settings) {
@@ -74,11 +84,8 @@ public class WoodBlocks {
                 Identifier.of(BorukvaChisel.MOD_ID, name), new BlockItem(block, settings));
     }
 
-    private static void addBlocksToBuildingBlocksTabItemGroup
-            (FabricItemGroupEntries entries) {
-//        CHERRY_VARIANTS.forEach((name, block) -> entries.add(block));
-        WOOD_BLOCKS.forEach((block, list) -> list.forEach(entries::add));
-//                    CHERRY_VARIANTS.forEach(entries::add);
+    private static void addBlocksToBuildingBlocksTabItemGroup(FabricItemGroupEntries entries) {
+        getWoodBlocks().forEach((block, list) -> list.forEach(entries::add));
     }
 
     public static void registerModBlocks() {
