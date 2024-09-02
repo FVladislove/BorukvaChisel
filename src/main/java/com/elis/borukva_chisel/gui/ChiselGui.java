@@ -4,6 +4,7 @@ import com.elis.borukva_chisel.block.ModBlocks;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.*;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -18,11 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChiselGui extends SimpleGui {
 
-    // TODO fix
     public static final Logger logger = LoggerFactory.getLogger(ChiselGui.class);
 
     private static final int MAX_SLOTS = 32; // 8X4 grid
-    private static final int startSlotIdx = 5;
+    private static final int startSlotIdx = 4;
 
     private static final int inputIdx = 0;
     private static final int infoIdx = 1;
@@ -37,7 +37,6 @@ public class ChiselGui extends SimpleGui {
     public ChiselGui(ServerPlayerEntity player) {
         super(ScreenHandlerType.GENERIC_9X6, player, false);
 
-
         this.setTitle(Text.literal("Chisel"));
         addButtons();
     }
@@ -45,7 +44,7 @@ public class ChiselGui extends SimpleGui {
     private void addButtons() {
         this.setSlot(inputIdx, new GuiElementBuilder(ItemStack.EMPTY)
                 .setName(Text.literal("Converting item"))
-                .setCallback((index, type, action) -> mainMenu())
+                .setCallback(this::mainMenu)
                 .build());
 
         this.setSlot(infoIdx, new GuiElementBuilder(Items.BOOK)
@@ -63,80 +62,118 @@ public class ChiselGui extends SimpleGui {
                 .setName(Text.literal("Next Page")));
     }
 
-    private void getItem(int idx) {
-        Objects.requireNonNull(this.getSlot(inputIdx))
-                .getItemStack()
-                .decrement(1);
-        if (player.currentScreenHandler.getCursorStack().isEmpty()) {
-            player.currentScreenHandler.setCursorStack(
-                    Objects.requireNonNull(this.getSlot(idx))
-                            .getItemStack()
-                            .copy());
+    private void getItem(int index, ClickType type, SlotActionType action) {
+        var inputSlot = Objects.requireNonNull(this.getSlot(inputIdx));
+        var itemSlot = Objects.requireNonNull(this.getSlot(index));
+
+        var handler = player.currentScreenHandler;
+
+        // number of items given to player
+        int itemsGet = 1;
+
+        if (action == SlotActionType.QUICK_MOVE) {
+            itemsGet = inputSlot.getItemStack().getCount();
+            player.getInventory().offerOrDrop(
+                    itemSlot.getItemStack().copyWithCount(itemsGet)
+            );
+        } else {
+            // set cursor stack
+            if (handler.getCursorStack().isEmpty()) {
+                handler.setCursorStack(
+                        itemSlot.getItemStack().copyWithCount(itemsGet));
+            } else {
+                Item item = itemSlot.getItemStack().getItem();
+                // add to cursor stack
+                if (handler.getCursorStack().isOf(item)) {
+                    handler.setCursorStack(handler.getCursorStack()
+                            .copyWithCount(handler.getCursorStack().getCount() + itemsGet));
+                } else {
+                    return;
+                }
+            }
+        }
+
+        inputSlot.getItemStack().decrement(itemsGet);
+
+        if (inputSlot.getItemStack().isEmpty()) {
+            clearSlots();
         }
     }
 
-    private void mainMenu() {
-        // TODO: make item move to inventory on SHIFT+Click
-        GuiElement currentSlot = (GuiElement) Objects.requireNonNull(this.getSlot(inputIdx));
+    private void mainMenu(int index, ClickType type, SlotActionType action) {
+        // TODO: make item move from inventory on SHIFT+Click
+        GuiElement currentSlot = (GuiElement) Objects.requireNonNull(this.getSlot(index));
 
-        var currentStack = currentSlot.getItemStack();
-        var handler = player.currentScreenHandler;
+        handleSlotItemTransfer(index, type, action);
 
-        logger.debug("Stack in slot -> {}", currentStack.toString());
-        logger.debug("Stack in hand -> {}", handler.getCursorStack());
+        addVariants(currentSlot.getItemStack());
+    }
 
-        if (handler.getCursorStack().isEmpty()) {
-            // Adding item to hand
-            handler.setCursorStack(currentStack);
+    private void addVariants(ItemStack itemStack) {
+        // atomic integer is used because of .forEach() function
+        AtomicInteger idx = new AtomicInteger(startSlotIdx);
+
+        // for each mod block if key is type of itemStack add slots
+        ModBlocks.getAllBlocks().forEach((vanila_block, variants) -> {
+            if (itemStack.isOf(vanila_block.asItem())) {
+                variants.forEach((variant) -> {
+                    // setSlot is used instead of addSlot to prevent slots duplication
+                    // for example if an item decrements to 0 and a new item
+                    // of the same type is added to inputSlot
+                    this.setSlot(idx.get(), new GuiElementBuilder(variant.asItem())
+                            .setCallback(this::getItem));
+                    idx.getAndIncrement();
+                });
+            }
+        });
+    }
+
+    private void handleSlotItemTransfer(int index, ClickType type, SlotActionType action) {
+        var slot = (GuiElement) Objects.requireNonNull(this.getSlot(index));
+        var currentStack = slot.getItemStack();
+        var playerHand = this.player.currentScreenHandler;
+
+        logger.info("Stack in slot -> {}", currentStack.toString());
+        logger.info("Stack in hand -> {}", this.player.currentScreenHandler.getCursorStack());
+
+        if (action == SlotActionType.QUICK_MOVE) {
+            player.getInventory().offerOrDrop(slot.getItemStack());
+            clearSlots();
+            return;
+        }
+
+        if (playerHand.getCursorStack().isEmpty()) {
+            // Adding item from slot to hand
+            playerHand.setCursorStack(currentStack);
             // Used because the ItemStack icon remained after
             // adding it to the player's hand
-            currentSlot.setItemStack(ItemStack.EMPTY);
+            slot.setItemStack(ItemStack.EMPTY);
             clearSlots();
         } else {
             if (currentStack.isEmpty()) {
                 // Add item to slot
-                currentSlot.setItemStack(handler.getCursorStack());
-                handler.setCursorStack(ItemStack.EMPTY);
+                slot.setItemStack(playerHand.getCursorStack());
+                playerHand.setCursorStack(ItemStack.EMPTY);
             } else {
                 if (player.isCreative()) {
                     if (player.getInventory().contains(currentStack)) {
                         player.getInventory().insertStack(currentStack);
                     }
                 } else {
-                    // TODO check
                     player.getInventory().offerOrDrop(currentStack);
                 }
             }
         }
-
-        currentStack = currentSlot.getItemStack();
-
-        AtomicInteger idx = new AtomicInteger(startSlotIdx);
-        ItemStack finalCurrentStack = currentStack;
-
-        ModBlocks.getAllBlocks().forEach((vanila_block, variants) -> {
-            if (finalCurrentStack.isOf(vanila_block.asItem())) {
-                variants.forEach((variant) ->
-                        this.addSlot(new GuiElementBuilder(variant.asItem())
-                                .setCallback((index, type, action) -> getItem(index))));
-                idx.getAndIncrement();
-            }
-        });
-        // TODO fix duplication bug: if picked item placed in slot, all items duplicated
-
-        logger.info("\n");
     }
 
-    // TODO replace with function for items pick
     @Override
     public boolean onClick(int index, ClickType type, SlotActionType action, GuiElementInterface element) {
-        // TODO REMOVE
-
-        logger.debug("OnClick\n");
-        logger.debug("Index {}", index);
-        logger.debug("Click type {}", type.toString());
-        logger.debug("Action {}", action.toString());
-        logger.debug("Item stack {}", element.getItemStack());
+        // for debug purpose
+        logger.info("OnClick");
+        logger.info("Index {}", index);
+        logger.info("Click type {}", type.toString());
+        logger.info("Action {}", action.toString());
+        logger.info("Item stack {}", element.getItemStack());
 
         return false;
 //        return super.onClick(index, type, action, element);
