@@ -25,6 +25,7 @@ import java.util.List;
 
 public class ChiselItem extends Item implements PolymerItem {
 
+    // TODO fix Chisel double item name
     private final PolymerModelData model = PolymerResourcePackUtils.requestModel(Items.BOOK,
             Identifier.of(BorukvaChisel.MOD_ID, "item/chisel"));
 

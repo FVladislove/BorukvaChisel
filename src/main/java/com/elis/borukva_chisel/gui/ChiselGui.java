@@ -1,6 +1,7 @@
 package com.elis.borukva_chisel.gui;
 
 import com.elis.borukva_chisel.block.ModBlocks;
+import com.elis.borukva_chisel.utils.PlaceableSlotActions;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.*;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -19,15 +20,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChiselGui extends SimpleGui {
 
+    // TODO save player items on disconnect (like -електрохарчування)
     public static final Logger logger = LoggerFactory.getLogger(ChiselGui.class);
 
     private static final int MAX_SLOTS = 32; // 8X4 grid
     private static final int startSlotIdx = 4;
+    private static final int startPage = 1;
 
     private static final int inputIdx = 0;
     private static final int infoIdx = 1;
     private static final int prevPageIdx = 2;
     private static final int nextPageIdx = 3;
+    private List<GuiElementBuilder> currentVariants = null;
 
     /**
      * Constructs a new simple container gui for the supplied player.
@@ -44,7 +48,7 @@ public class ChiselGui extends SimpleGui {
     private void addButtons() {
         this.setSlot(inputIdx, new GuiElementBuilder(ItemStack.EMPTY)
                 .setName(Text.literal("Converting item"))
-                .setCallback(this::mainMenu)
+                .setCallback(this::inputItemCallback)
                 .build());
 
         this.setSlot(infoIdx, new GuiElementBuilder(Items.BOOK)
@@ -100,13 +104,32 @@ public class ChiselGui extends SimpleGui {
         }
     }
 
-    private void mainMenu(int index, ClickType type, SlotActionType action) {
-        // TODO: make item move from inventory on SHIFT+Click
-        GuiElement currentSlot = (GuiElement) Objects.requireNonNull(this.getSlot(index));
+    private void inputItemCallback(int index, ClickType type, SlotActionType action) {
+        GuiElement inputSlot = (GuiElement) Objects.requireNonNull(this.getSlot(index));
 
-        handleSlotItemTransfer(index, type, action);
+        PlaceableSlotActions
+                .handlePlaceableSlotAction(this, index, type, action);
 
-        addVariants(currentSlot.getItemStack());
+        if (inputSlot.getItemStack().isEmpty()) {
+            clearSlots();
+        } else{
+            addVariants(inputSlot.getItemStack());
+        }
+    }
+
+    private List<GuiElementBuilder> getVariants(ItemStack itemStack) {
+        List<GuiElementBuilder> variantSlots = new ArrayList<>();
+
+        // for each mod block if key is type of itemStack add slots
+        ModBlocks.getAllBlocks().forEach((vanila_block, variants) -> {
+            if (itemStack.isOf(vanila_block.asItem())) {
+                variants.forEach((variant) -> {
+                    variantSlots.add(new GuiElementBuilder(variant.asItem())
+                            .setCallback(this::getItem));
+                });
+            }
+        });
+        return variantSlots;
     }
 
     private void addVariants(ItemStack itemStack) {
@@ -128,42 +151,16 @@ public class ChiselGui extends SimpleGui {
         });
     }
 
-    private void handleSlotItemTransfer(int index, ClickType type, SlotActionType action) {
-        var slot = (GuiElement) Objects.requireNonNull(this.getSlot(index));
-        var currentStack = slot.getItemStack();
-        var playerHand = this.player.currentScreenHandler;
+    private void setPage(int page) {
 
-        logger.info("Stack in slot -> {}", currentStack.toString());
-        logger.info("Stack in hand -> {}", this.player.currentScreenHandler.getCursorStack());
+    }
 
-        if (action == SlotActionType.QUICK_MOVE) {
-            player.getInventory().offerOrDrop(slot.getItemStack());
-            clearSlots();
-            return;
-        }
+    private void prevPage() {
 
-        if (playerHand.getCursorStack().isEmpty()) {
-            // Adding item from slot to hand
-            playerHand.setCursorStack(currentStack);
-            // Used because the ItemStack icon remained after
-            // adding it to the player's hand
-            slot.setItemStack(ItemStack.EMPTY);
-            clearSlots();
-        } else {
-            if (currentStack.isEmpty()) {
-                // Add item to slot
-                slot.setItemStack(playerHand.getCursorStack());
-                playerHand.setCursorStack(ItemStack.EMPTY);
-            } else {
-                if (player.isCreative()) {
-                    if (player.getInventory().contains(currentStack)) {
-                        player.getInventory().insertStack(currentStack);
-                    }
-                } else {
-                    player.getInventory().offerOrDrop(currentStack);
-                }
-            }
-        }
+    }
+
+    private void nextPage() {
+
     }
 
     @Override
@@ -183,5 +180,11 @@ public class ChiselGui extends SimpleGui {
         for (int idx = startSlotIdx; idx < MAX_SLOTS; idx++) {
             this.clearSlot(idx);
         }
+    }
+
+    @Override
+    public void onClose() {
+        // offering items if player didn't get it manually
+        player.getInventory().offerOrDrop(Objects.requireNonNull(getSlot(inputIdx)).getItemStack());
     }
 }

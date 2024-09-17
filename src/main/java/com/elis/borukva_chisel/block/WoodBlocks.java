@@ -43,6 +43,8 @@ public class WoodBlocks {
         return registerBlocks(parentBLock, parentBLock, blocksNames);
     }
 
+    // TODO upgrade for folders
+    // like "block/cherry/test_log.json
     private static Map<Block, List<Block>> registerBlocks(Block vanillaBock, Block settingsBlock, Set<String> blockNames) {
         List<Block> blocks = new ArrayList<>();
         for (var name : blockNames) {
@@ -69,9 +71,9 @@ public class WoodBlocks {
         return map;
     }
 
-    // TODO make function to use less repeatable data
     private static Block registerBlock(String name, Block
             block, Item.Settings settings) {
+
         logger.info("Registering wood block: {}", name);
 
         registerBlockItem(name, block, settings);
