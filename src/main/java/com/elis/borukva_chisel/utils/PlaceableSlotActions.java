@@ -44,19 +44,19 @@ public class PlaceableSlotActions {
     public static void handleLeftClick(
             @NotNull SimpleGui gui,
             int slotIndex) {
-        var slot = (GuiElement) Objects.requireNonNull(gui.getSlot(slotIndex));
+        var placeableSlot = (GuiElement) Objects.requireNonNull(gui.getSlot(slotIndex));
         var playerHand = gui.getPlayer().currentScreenHandler;
 
         if (playerHand.getCursorStack().isEmpty()) {
             // Adding item from slot to hand
-            playerHand.setCursorStack(slot.getItemStack().copyAndEmpty());
+            playerHand.setCursorStack(placeableSlot.getItemStack().copyAndEmpty());
         } else {
-            if (slot.getItemStack().isEmpty()) {
+            if (placeableSlot.getItemStack().isEmpty()) {
                 // Add item to slot
-                slot.setItemStack(playerHand.getCursorStack().copyAndEmpty());
+                placeableSlot.setItemStack(playerHand.getCursorStack().copyAndEmpty());
             } else {
                 // player add item to slot which contains item already
-                slot.getItemStack().increment(playerHand.getCursorStack().getCount());
+                placeableSlot.getItemStack().increment(playerHand.getCursorStack().getCount());
                 playerHand.getCursorStack().decrement(playerHand.getCursorStack().getCount());
             }
         }
@@ -65,28 +65,28 @@ public class PlaceableSlotActions {
     public static void handleRightClick(
             @NotNull SimpleGui gui,
             int slotIndex) {
-        var slot = (GuiElement) Objects.requireNonNull(gui.getSlot(slotIndex));
+        var placeableSlot = (GuiElement) Objects.requireNonNull(gui.getSlot(slotIndex));
         var playerHand = gui.getPlayer().currentScreenHandler;
 
         // adding 1 item to empty slot
-        if (slot.getItemStack().isEmpty()) {
-            slot.setItemStack(playerHand.getCursorStack().copyWithCount(1));
+        if (placeableSlot.getItemStack().isEmpty()) {
+            placeableSlot.setItemStack(playerHand.getCursorStack().copyWithCount(1));
             playerHand.getCursorStack().decrement(1);
         } else {
             // adding half of stack to hand
             if (playerHand.getCursorStack().isEmpty()) {
-                int slotHalfStack = slot.getItemStack().getCount() / 2;
-                playerHand.setCursorStack(slot.getItemStack().copyWithCount(slotHalfStack));
-                slot.getItemStack().decrement(slotHalfStack);
+                int slotHalfStack = placeableSlot.getItemStack().getCount() / 2;
+                playerHand.setCursorStack(placeableSlot.getItemStack().copyWithCount(slotHalfStack));
+                placeableSlot.getItemStack().decrement(slotHalfStack);
             } else {
                 // incrementing if item is the same
-                if (playerHand.getCursorStack().isOf(slot.getItemStack().getItem())) {
-                    slot.getItemStack().increment(1);
+                if (playerHand.getCursorStack().isOf(placeableSlot.getItemStack().getItem())) {
+                    placeableSlot.getItemStack().increment(1);
                     playerHand.getCursorStack().decrement(1);
                 } else {
                     // swap items
-                    var temp = slot.getItemStack();
-                    slot.setItemStack(playerHand.getCursorStack());
+                    var temp = placeableSlot.getItemStack();
+                    placeableSlot.setItemStack(playerHand.getCursorStack());
                     playerHand.setCursorStack(temp);
                 }
             }
